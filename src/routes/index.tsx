@@ -219,50 +219,46 @@ function Landing() {
               </h2>
             </div>
 
-            <div className="mt-14 grid gap-6 md:grid-cols-2">
-              {[
-                {
-                  icon: "⚡",
-                  title: "Smart Splits",
-                  desc: "Split equally or by who actually joined. Scuba diving? Only charge the 3 people who went. Everyone else pays zero.",
-                },
-                {
-                  icon: "📊",
-                  title: "Crystal Clear Balances",
-                  desc: "See exactly who owes whom — in one glance. Green means you're owed money. Red means you owe.",
-                },
-                {
-                  icon: "📷",
-                  title: "Receipt Scanner",
-                  desc: "Snap a restaurant receipt. Everyone taps what they ordered. Bill distributed automatically — no guessing, no arguments.",
-                },
-                {
-                  icon: "🔔",
-                  title: "Auto Reminders",
-                  desc: "chip·in sends gentle (then firm) reminders to late payers on your behalf. You stay the good friend.",
-                },
-                {
-                  icon: "🌍",
-                  title: "Multi-Currency",
-                  desc: "Paid in IDR, USD, or EUR? Log it in any currency. We convert to your base currency and lock the rate at time of payment.",
-                },
-                {
-                  icon: "📈",
-                  title: "Full Trip Report",
-                  desc: "When the trip ends, get a beautiful breakdown — by category, by person, with charts and a downloadable PDF.",
-                },
-              ].map((f) => (
-                <div
-                  key={f.title}
-                  className="group relative flex gap-5 rounded-2xl border border-border bg-card p-6 transition-smooth hover:border-primary/50 hover:shadow-glow sm:p-8"
-                >
-                  <GradientIcon>{f.icon}</GradientIcon>
-                  <div className="flex-1">
-                    <h3 className="text-xl font-bold">{f.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{f.desc}</p>
-                  </div>
-                </div>
-              ))}
+            <div className="mt-20 space-y-24 sm:space-y-32">
+              <FeatureRow
+                icon="⚡"
+                title="Smart Splits"
+                desc="Split equally or by who actually joined. Scuba diving? Only charge the 3 people who went. Everyone else pays zero."
+                visual={<SmartSplitsVisual />}
+                reverse
+              />
+              <FeatureRow
+                icon="📊"
+                title="Crystal Clear Balances"
+                desc="See exactly who owes whom — in one glance. Green means you're owed money. Red means you owe."
+                visual={<BalancesVisual />}
+              />
+              <FeatureRow
+                icon="📷"
+                title="Scan & Split Instantly"
+                desc="Snap a restaurant receipt. Everyone taps what they ordered. Bill distributed automatically — no guessing, no arguments."
+                visual={<ReceiptVisual />}
+                reverse
+              />
+              <FeatureRow
+                icon="🔔"
+                title="Never Chase Again"
+                desc="chip·in sends gentle (then firm) reminders to late payers on your behalf. You stay the good friend."
+                visual={<ReminderVisual />}
+              />
+              <FeatureRow
+                icon="🌍"
+                title="Any Currency, Anywhere"
+                desc="Paid in IDR, USD, or EUR? Log it in any currency. We convert to your base currency and lock the rate at time of payment."
+                visual={<CurrencyVisual />}
+                reverse
+              />
+              <FeatureRow
+                icon="📈"
+                title="Full Trip Report"
+                desc="When the trip ends, get a beautiful breakdown — by category, by person, with charts and a downloadable PDF."
+                visual={<ReportVisual />}
+              />
             </div>
           </div>
         </section>
