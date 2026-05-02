@@ -9,38 +9,122 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppReportRouteImport } from './routes/app.report'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppBalancesRouteImport } from './routes/app.balances'
+import { Route as AppAddExpenseRouteImport } from './routes/app.add-expense'
+import { Route as AppTripIdRouteImport } from './routes/app.trip.$id'
 
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppReportRoute = AppReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBalancesRoute = AppBalancesRouteImport.update({
+  id: '/balances',
+  path: '/balances',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAddExpenseRoute = AppAddExpenseRouteImport.update({
+  id: '/add-expense',
+  path: '/add-expense',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppTripIdRoute = AppTripIdRouteImport.update({
+  id: '/trip/$id',
+  path: '/trip/$id',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/add-expense': typeof AppAddExpenseRoute
+  '/app/balances': typeof AppBalancesRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/report': typeof AppReportRoute
+  '/app/trip/$id': typeof AppTripIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/add-expense': typeof AppAddExpenseRoute
+  '/app/balances': typeof AppBalancesRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/report': typeof AppReportRoute
+  '/app/trip/$id': typeof AppTripIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/add-expense': typeof AppAddExpenseRoute
+  '/app/balances': typeof AppBalancesRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/report': typeof AppReportRoute
+  '/app/trip/$id': typeof AppTripIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/add-expense'
+    | '/app/balances'
+    | '/app/dashboard'
+    | '/app/report'
+    | '/app/trip/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/app'
+    | '/app/add-expense'
+    | '/app/balances'
+    | '/app/dashboard'
+    | '/app/report'
+    | '/app/trip/$id'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/add-expense'
+    | '/app/balances'
+    | '/app/dashboard'
+    | '/app/report'
+    | '/app/trip/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +132,65 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/report': {
+      id: '/app/report'
+      path: '/report'
+      fullPath: '/app/report'
+      preLoaderRoute: typeof AppReportRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/balances': {
+      id: '/app/balances'
+      path: '/balances'
+      fullPath: '/app/balances'
+      preLoaderRoute: typeof AppBalancesRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/add-expense': {
+      id: '/app/add-expense'
+      path: '/add-expense'
+      fullPath: '/app/add-expense'
+      preLoaderRoute: typeof AppAddExpenseRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/trip/$id': {
+      id: '/app/trip/$id'
+      path: '/trip/$id'
+      fullPath: '/app/trip/$id'
+      preLoaderRoute: typeof AppTripIdRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAddExpenseRoute: typeof AppAddExpenseRoute
+  AppBalancesRoute: typeof AppBalancesRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppReportRoute: typeof AppReportRoute
+  AppTripIdRoute: typeof AppTripIdRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAddExpenseRoute: AppAddExpenseRoute,
+  AppBalancesRoute: AppBalancesRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppReportRoute: AppReportRoute,
+  AppTripIdRoute: AppTripIdRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
