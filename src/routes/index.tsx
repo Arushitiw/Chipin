@@ -44,6 +44,192 @@ function FloatingBadge({
   );
 }
 
+function FeatureRow({
+  icon,
+  title,
+  desc,
+  visual,
+  reverse = false,
+}: {
+  icon: string;
+  title: string;
+  desc: string;
+  visual: React.ReactNode;
+  reverse?: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
+      <div className={reverse ? "lg:order-2" : ""}>
+        <GradientIcon>{icon}</GradientIcon>
+        <h3 className="mt-6 text-3xl font-extrabold tracking-tight sm:text-4xl">
+          {title}
+        </h3>
+        <p className="mt-4 max-w-md text-base leading-relaxed text-muted-foreground sm:text-lg">
+          {desc}
+        </p>
+      </div>
+      <div className={`relative ${reverse ? "lg:order-1" : ""}`}>
+        <div className="pointer-events-none absolute inset-0 -z-10 rounded-3xl bg-gradient-primary opacity-20 blur-3xl" />
+        {visual}
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Feature visuals ---------- */
+
+function SmartSplitsVisual() {
+  const people = [
+    { i: "A", n: "Arjun", on: true },
+    { i: "R", n: "Rohan", on: true },
+    { i: "S", n: "Sneha", on: true },
+    { i: "P", n: "Priya", on: false },
+    { i: "K", n: "Karan", on: false },
+  ];
+  return (
+    <div className="mx-auto max-w-sm rounded-2xl border border-border bg-card p-5 shadow-card">
+      <div className="text-xs font-bold tracking-widest text-muted-foreground">
+        WHO PARTICIPATED?
+      </div>
+      <div className="mt-4 space-y-3">
+        {people.map((p) => (
+          <div key={p.n} className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-primary text-sm font-bold text-primary-foreground">
+              {p.i}
+            </div>
+            <div className="flex-1 text-sm font-medium">{p.n}</div>
+            <div
+              className={`relative h-6 w-11 rounded-full transition-smooth ${
+                p.on ? "bg-success" : "bg-card-2"
+              }`}
+            >
+              <div
+                className={`absolute top-0.5 h-5 w-5 rounded-full bg-white transition-smooth ${
+                  p.on ? "left-[22px]" : "left-0.5"
+                }`}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-4 text-sm font-semibold text-primary">
+        3 people • ₹3,000 each
+      </div>
+    </div>
+  );
+}
+
+function BalancesVisual() {
+  const rows = [
+    { n: "Arjun", a: "+₹82,000", pos: true },
+    { n: "Sneha", a: "+₹17,000", pos: true },
+    { n: "Rohan", a: "−₹25,000", pos: false },
+    { n: "Karan", a: "−₹43,000", pos: false },
+  ];
+  return (
+    <div className="mx-auto max-w-sm rounded-2xl border border-border bg-card p-5 shadow-card">
+      <div className="space-y-3">
+        {rows.map((r) => (
+          <div key={r.n} className="flex items-center justify-between">
+            <div className="text-sm font-medium">{r.n}</div>
+            <div
+              className={`rounded-pill px-3 py-1 text-xs font-bold ${
+                r.pos
+                  ? "bg-success/15 text-success"
+                  : "bg-destructive/15 text-destructive"
+              }`}
+            >
+              {r.a}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ReceiptVisual() {
+  return (
+    <div className="mx-auto max-w-sm rounded-2xl border-2 border-dashed border-primary/60 bg-card p-8 text-center shadow-card">
+      <div className="text-4xl">📷</div>
+      <div className="mt-3 text-sm font-semibold">Snap receipt to split</div>
+      <div className="mt-3 text-2xl">🍜 🍗 🥤</div>
+    </div>
+  );
+}
+
+function ReminderVisual() {
+  return (
+    <div className="mx-auto max-w-sm rounded-2xl border border-border bg-card p-5 shadow-card">
+      <div className="rounded-xl bg-gradient-primary-soft p-4">
+        <div className="text-xs text-muted-foreground">chip·in reminder</div>
+        <div className="mt-1 text-sm font-semibold">
+          Hey Karan! ₹43,000 from the Bali trip is pending 🙏
+        </div>
+        <div className="mt-3 text-xs font-semibold text-primary">Tap to pay →</div>
+      </div>
+    </div>
+  );
+}
+
+function CurrencyVisual() {
+  const list = [
+    { c: "IN", n: "INR" },
+    { c: "US", n: "USD" },
+    { c: "EU", n: "EUR" },
+    { c: "ID", n: "IDR" },
+    { c: "GB", n: "GBP" },
+  ];
+  return (
+    <div className="mx-auto max-w-sm rounded-2xl border border-border bg-card p-3 shadow-card">
+      {list.map((l) => (
+        <div
+          key={l.n}
+          className="flex items-center gap-4 border-b border-border/60 px-3 py-3 last:border-b-0"
+        >
+          <div className="text-xs font-bold tracking-widest text-muted-foreground">
+            {l.c}
+          </div>
+          <div className="text-sm font-semibold">{l.n}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ReportVisual() {
+  return (
+    <div className="mx-auto flex max-w-sm flex-col items-center rounded-2xl border border-border bg-card p-6 shadow-card">
+      <div
+        className="relative h-40 w-40 rounded-full"
+        style={{
+          background:
+            "conic-gradient(var(--primary) 0% 58%, var(--secondary) 58% 86%, var(--accent) 86% 94%, var(--card-2) 94% 100%)",
+        }}
+      >
+        <div className="absolute inset-6 flex items-center justify-center rounded-full bg-card text-base font-bold">
+          ₹2,15,000
+        </div>
+      </div>
+      <div className="mt-5 w-full space-y-2 text-sm">
+        {[
+          { d: "bg-primary", l: "Flights", v: "58%" },
+          { d: "bg-secondary", l: "Hotel", v: "28%" },
+          { d: "bg-accent", l: "Food", v: "8%" },
+        ].map((s) => (
+          <div key={s.l} className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className={`h-2.5 w-2.5 rounded-full ${s.d}`} />
+              <span>{s.l}</span>
+            </div>
+            <span className="font-bold">{s.v}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function Landing() {
   return (
     <div className="min-h-screen bg-background">
