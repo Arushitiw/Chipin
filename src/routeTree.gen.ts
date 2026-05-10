@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppReportRouteImport } from './routes/app.report'
+import { Route as AppReceiptSplitRouteImport } from './routes/app.receipt-split'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppBalancesRouteImport } from './routes/app.balances'
 import { Route as AppAddExpenseRouteImport } from './routes/app.add-expense'
@@ -30,6 +31,11 @@ const IndexRoute = IndexRouteImport.update({
 const AppReportRoute = AppReportRouteImport.update({
   id: '/report',
   path: '/report',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppReceiptSplitRoute = AppReceiptSplitRouteImport.update({
+  id: '/receipt-split',
+  path: '/receipt-split',
   getParentRoute: () => AppRoute,
 } as any)
 const AppDashboardRoute = AppDashboardRouteImport.update({
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/app/add-expense': typeof AppAddExpenseRoute
   '/app/balances': typeof AppBalancesRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/receipt-split': typeof AppReceiptSplitRoute
   '/app/report': typeof AppReportRoute
   '/app/trip/$id': typeof AppTripIdRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/app/add-expense': typeof AppAddExpenseRoute
   '/app/balances': typeof AppBalancesRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/receipt-split': typeof AppReceiptSplitRoute
   '/app/report': typeof AppReportRoute
   '/app/trip/$id': typeof AppTripIdRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/app/add-expense': typeof AppAddExpenseRoute
   '/app/balances': typeof AppBalancesRoute
   '/app/dashboard': typeof AppDashboardRoute
+  '/app/receipt-split': typeof AppReceiptSplitRoute
   '/app/report': typeof AppReportRoute
   '/app/trip/$id': typeof AppTripIdRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/app/add-expense'
     | '/app/balances'
     | '/app/dashboard'
+    | '/app/receipt-split'
     | '/app/report'
     | '/app/trip/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/app/add-expense'
     | '/app/balances'
     | '/app/dashboard'
+    | '/app/receipt-split'
     | '/app/report'
     | '/app/trip/$id'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/app/add-expense'
     | '/app/balances'
     | '/app/dashboard'
+    | '/app/receipt-split'
     | '/app/report'
     | '/app/trip/$id'
   fileRoutesById: FileRoutesById
@@ -137,6 +149,13 @@ declare module '@tanstack/react-router' {
       path: '/report'
       fullPath: '/app/report'
       preLoaderRoute: typeof AppReportRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/receipt-split': {
+      id: '/app/receipt-split'
+      path: '/receipt-split'
+      fullPath: '/app/receipt-split'
+      preLoaderRoute: typeof AppReceiptSplitRouteImport
       parentRoute: typeof AppRoute
     }
     '/app/dashboard': {
@@ -174,6 +193,7 @@ interface AppRouteChildren {
   AppAddExpenseRoute: typeof AppAddExpenseRoute
   AppBalancesRoute: typeof AppBalancesRoute
   AppDashboardRoute: typeof AppDashboardRoute
+  AppReceiptSplitRoute: typeof AppReceiptSplitRoute
   AppReportRoute: typeof AppReportRoute
   AppTripIdRoute: typeof AppTripIdRoute
 }
@@ -182,6 +202,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppAddExpenseRoute: AppAddExpenseRoute,
   AppBalancesRoute: AppBalancesRoute,
   AppDashboardRoute: AppDashboardRoute,
+  AppReceiptSplitRoute: AppReceiptSplitRoute,
   AppReportRoute: AppReportRoute,
   AppTripIdRoute: AppTripIdRoute,
 }
