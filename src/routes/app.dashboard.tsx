@@ -1,48 +1,168 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/app/dashboard")({
   component: Dashboard,
 });
+
+const MODES = [
+  {
+    id: "trip",
+    title: "Full Trip",
+    tagline: "Multi-day · multi-activity",
+    desc: "Flights, hotels, food, scuba, cabs — all under one roof.",
+    examples: ["✈ Flights", "🏨 Stay", "🍽 Dining", "🤿 Activities"],
+    icon: Plane,
+    gradient: "from-[#6C47FF] to-[#FF6B6B]",
+    ring: "ring-[#6C47FF]/40",
+    accent: "text-[#B8A6FF]",
+  },
+  {
+    id: "dayout",
+    title: "Day Out",
+    tagline: "Short trip · single day",
+    desc: "Waterpark, road trip, picnic — a handful of expenses to split.",
+    examples: ["🎟 Tickets", "🚗 Fuel", "🍔 Snacks"],
+    icon: Sun,
+    gradient: "from-[#FFB347] to-[#FF6B6B]",
+    ring: "ring-[#FFB347]/40",
+    accent: "text-[#FFD89B]",
+  },
+  {
+    id: "bite",
+    title: "Quick Bite",
+    tagline: "One bill · split now",
+    desc: "Just dinner with friends? Snap the receipt, split, done.",
+    examples: ["🧾 One receipt", "⚡ 30 sec split"],
+    icon: UtensilsCrossed,
+    gradient: "from-[#00C896] to-[#6C47FF]",
+    ring: "ring-[#00C896]/40",
+    accent: "text-[#7FE6C8]",
+  },
+] as const;
 
 function Dashboard() {
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-muted-foreground">Welcome back</p>
-          <h1 className="text-2xl font-bold">Your trips</h1>
+          <p className="text-sm text-muted-foreground">Welcome back, Arjun</p>
+          <h1 className="text-2xl font-bold">What are we splitting?</h1>
         </div>
         <div className="flex h-10 w-10 items-center justify-center rounded-pill bg-gradient-primary text-sm font-bold text-primary-foreground shadow-glow">
-          C
+          A
         </div>
       </header>
 
-      <div className="rounded-lg bg-gradient-primary p-6 shadow-glow-lg">
-        <p className="text-sm font-medium text-primary-foreground/80">Total balance</p>
-        <p className="mt-1 text-4xl font-bold text-primary-foreground">+$124.50</p>
-        <p className="mt-2 text-sm text-primary-foreground/80">You're owed across 2 trips</p>
+      {/* AI suggest banner */}
+      <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-[#1C1B29] via-[#241B3A] to-[#1C1B29] p-5 shadow-glow">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill bg-gradient-primary shadow-glow">
+            <Sparkles className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-semibold text-foreground">ChipIn AI suggests</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              You opened the app near <span className="text-foreground">Indiranagar</span> — heading
+              for dinner? Start a <span className="text-[#7FE6C8]">Quick Bite</span> split.
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="space-y-3">
-        <h2 className="text-sm font-semibold text-muted-foreground">Active trips</h2>
+      {/* Mode picker */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-muted-foreground">Pick your mode</h2>
+          <span className="text-xs text-muted-foreground">3 ways to split</span>
+        </div>
+
+        <div className="space-y-3">
+          {MODES.map((m) => {
+            const Icon = m.icon;
+            return (
+              <Link
+                key={m.id}
+                to="/app/add-expense"
+                className={`group relative block overflow-hidden rounded-2xl border border-border bg-card p-5 transition-smooth hover:ring-2 ${m.ring} hover:border-transparent`}
+              >
+                {/* gradient halo */}
+                <div
+                  className={`pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-to-br ${m.gradient} opacity-20 blur-2xl transition-opacity group-hover:opacity-40`}
+                />
+                <div className="relative flex items-start gap-4">
+                  <div
+                    className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br ${m.gradient} shadow-glow`}
+                  >
+                    <Icon className="h-7 w-7 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <p className="text-base font-bold text-foreground">{m.title}</p>
+                      <ArrowRight className={`h-4 w-4 ${m.accent} transition-transform group-hover:translate-x-1`} />
+                    </div>
+                    <p className={`text-xs font-medium ${m.accent}`}>{m.tagline}</p>
+                    <p className="mt-1.5 text-sm text-muted-foreground">{m.desc}</p>
+                    <div className="mt-3 flex flex-wrap gap-1.5">
+                      {m.examples.map((e) => (
+                        <span
+                          key={e}
+                          className="rounded-pill border border-border bg-background/60 px-2 py-0.5 text-[11px] text-muted-foreground"
+                        >
+                          {e}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Active trips */}
+      <section className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-muted-foreground">Continue where you left off</h2>
+          <Link to="/app/balances" className="text-xs text-primary">
+            View all
+          </Link>
+        </div>
         {[
-          { id: "1", name: "Lisbon weekend", members: 4, balance: "+$84.00" },
-          { id: "2", name: "Ski trip · Chamonix", members: 6, balance: "+$40.50" },
+          { id: "1", name: "Bali 2025", sub: "Full trip · 5 members", balance: "+₹82,000", positive: true, emoji: "🌴" },
+          { id: "2", name: "Wonderla day out", sub: "Day out · 4 members", balance: "−₹450", positive: false, emoji: "🎢" },
+          { id: "3", name: "Toit dinner", sub: "Quick bite · 3 members", balance: "+₹620", positive: true, emoji: "🍻" },
         ].map((t) => (
           <Link
             key={t.id}
             to="/app/trip/$id"
             params={{ id: t.id }}
-            className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-smooth hover:border-primary/40 hover:shadow-glow"
+            className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-smooth hover:border-primary/40 hover:shadow-glow"
           >
-            <div>
-              <p className="font-semibold">{t.name}</p>
-              <p className="text-sm text-muted-foreground">{t.members} members</p>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-background text-xl">
+                {t.emoji}
+              </div>
+              <div>
+                <p className="font-semibold text-foreground">{t.name}</p>
+                <p className="text-xs text-muted-foreground">{t.sub}</p>
+              </div>
             </div>
-            <span className="font-semibold text-success">{t.balance}</span>
+            <span className={`text-sm font-bold ${t.positive ? "text-[#00C896]" : "text-[#FF4757]"}`}>
+              {t.balance}
+            </span>
           </Link>
         ))}
-      </div>
+      </section>
+
+      {/* Custom CTA */}
+      <Link
+        to="/app/add-expense"
+        className="flex items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-card/50 p-4 text-sm font-medium text-muted-foreground transition-smooth hover:border-primary/50 hover:text-foreground"
+      >
+        <Plus className="h-4 w-4" /> Start something custom
+      </Link>
     </div>
   );
 }
