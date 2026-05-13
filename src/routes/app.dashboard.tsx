@@ -1,12 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus, Wand2,
-  Hotel, Car, Ticket, Coffee, Waves, Mountain, ShoppingBag, Music,
+  Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus, Wand2, Wrench,
 } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/app/dashboard")({
   component: Dashboard,
