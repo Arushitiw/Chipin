@@ -151,10 +151,10 @@ function Dashboard() {
           {MODES.map((m) => {
             const Icon = m.icon;
             return (
-              <Link
+              <button
                 key={m.id}
-                to="/app/add-expense"
-                className={`group relative block overflow-hidden rounded-2xl border border-border bg-card p-5 transition-smooth hover:ring-2 ${m.ring} hover:border-transparent`}
+                onClick={() => { openCreate(); pickType(m); }}
+                className={`group relative block w-full text-left overflow-hidden rounded-2xl border border-border bg-card p-5 transition-smooth hover:ring-2 ${m.ring} hover:border-transparent`}
               >
                 {/* gradient halo */}
                 <div
