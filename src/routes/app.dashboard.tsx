@@ -1,37 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import {
-  Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus, Wand2,
-  Hotel, Car, Ticket, Coffee, Waves, Mountain, ShoppingBag, Music,
+  Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus, Wand2, Wrench,
 } from "lucide-react";
 import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/app/dashboard")({
   component: Dashboard,
 });
-
-const ACTIVITIES: Record<string, { id: string; label: string; icon: any; color: string }[]> = {
-  trip: [
-    { id: "flights", label: "Flights", icon: Plane, color: "from-[#6C47FF] to-[#A78BFF]" },
-    { id: "hotel", label: "Hotel / Stay", icon: Hotel, color: "from-[#FF6B6B] to-[#FF9A8B]" },
-    { id: "scuba", label: "Scuba / Activity", icon: Waves, color: "from-[#00C896] to-[#5DE0C0]" },
-    { id: "cabs", label: "Cabs / Transfers", icon: Car, color: "from-[#FFB347] to-[#FFD89B]" },
-    { id: "trek", label: "Trek / Tour", icon: Mountain, color: "from-[#6C47FF] to-[#FF6B6B]" },
-    { id: "shop", label: "Shopping", icon: ShoppingBag, color: "from-[#FF6B6B] to-[#6C47FF]" },
-  ],
-  dayout: [
-    { id: "tickets", label: "Park Tickets", icon: Ticket, color: "from-[#FFB347] to-[#FF6B6B]" },
-    { id: "fuel", label: "Fuel / Cab", icon: Car, color: "from-[#00C896] to-[#FFB347]" },
-    { id: "snacks", label: "Snacks", icon: Coffee, color: "from-[#FF6B6B] to-[#FFB347]" },
-    { id: "concert", label: "Concert / Event", icon: Music, color: "from-[#6C47FF] to-[#FF6B6B]" },
-  ],
-  bite: [
-    { id: "dinner", label: "Dinner", icon: UtensilsCrossed, color: "from-[#00C896] to-[#6C47FF]" },
-    { id: "cafe", label: "Café / Drinks", icon: Coffee, color: "from-[#FFB347] to-[#00C896]" },
-  ],
-};
 
 const MODES = [
   {
@@ -44,6 +23,7 @@ const MODES = [
     gradient: "from-[#6C47FF] to-[#FF6B6B]",
     ring: "ring-[#6C47FF]/40",
     accent: "text-[#B8A6FF]",
+    placeholder: "e.g. Bali 2025",
   },
   {
     id: "dayout",
@@ -55,6 +35,7 @@ const MODES = [
     gradient: "from-[#FFB347] to-[#FF6B6B]",
     ring: "ring-[#FFB347]/40",
     accent: "text-[#FFD89B]",
+    placeholder: "e.g. Wonderla Sunday",
   },
   {
     id: "bite",
@@ -66,27 +47,44 @@ const MODES = [
     gradient: "from-[#00C896] to-[#6C47FF]",
     ring: "ring-[#00C896]/40",
     accent: "text-[#7FE6C8]",
+    placeholder: "e.g. Toit dinner",
+  },
+  {
+    id: "custom",
+    title: "Custom",
+    tagline: "Your rules · your name",
+    desc: "Name it whatever you want and add expenses your way.",
+    examples: ["✨ Anything goes", "📝 Free-form"],
+    icon: Wrench,
+    gradient: "from-[#A78BFF] to-[#00C896]",
+    ring: "ring-[#A78BFF]/40",
+    accent: "text-[#C9B6FF]",
+    placeholder: "e.g. Roomies May",
   },
 ] as const;
 
 function Dashboard() {
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
-  const [step, setStep] = useState<"type" | "activity">("type");
+  const [step, setStep] = useState<"type" | "name">("type");
   const [pickedType, setPickedType] = useState<(typeof MODES)[number] | null>(null);
+  const [splitName, setSplitName] = useState("");
 
   const openCreate = () => {
     setStep("type");
     setPickedType(null);
+    setSplitName("");
     setOpen(true);
   };
 
   const pickType = (m: (typeof MODES)[number]) => {
     setPickedType(m);
-    setStep("activity");
+    setSplitName("");
+    setStep("name");
   };
 
-  const pickActivity = () => {
+  const confirmName = () => {
+    if (!splitName.trim() || !pickedType) return;
     setOpen(false);
     navigate({ to: "/app/add-expense" });
   };
@@ -240,12 +238,12 @@ function Dashboard() {
           <div className="mx-auto max-w-2xl p-6">
             <SheetHeader className="text-left">
               <SheetTitle className="text-xl text-foreground">
-                {step === "type" ? "What type of split?" : `Pick activity for ${pickedType?.title}`}
+                {step === "type" ? "What type of split?" : `Name your ${pickedType?.title.toLowerCase()}`}
               </SheetTitle>
               <SheetDescription>
                 {step === "type"
                   ? "Choose how big this is — we'll tailor the flow."
-                  : "Tag the activity so AI can categorise & report it."}
+                  : "Call it whatever you want. You can add anything inside."}
               </SheetDescription>
             </SheetHeader>
 
@@ -273,24 +271,41 @@ function Dashboard() {
               </div>
             )}
 
-            {step === "activity" && pickedType && (
+            {step === "name" && pickedType && (
               <>
-                <div className="mt-5 grid grid-cols-2 gap-3">
-                  {ACTIVITIES[pickedType.id].map((a) => {
-                    const Icon = a.icon;
-                    return (
-                      <button
-                        key={a.id}
-                        onClick={pickActivity}
-                        className="group flex flex-col items-start gap-2 rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:border-primary/40 hover:shadow-glow"
-                      >
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${a.color}`}>
-                          <Icon className="h-5 w-5 text-white" />
-                        </div>
-                        <p className="text-sm font-semibold text-foreground">{a.label}</p>
-                      </button>
-                    );
-                  })}
+                <div className="mt-5 space-y-4">
+                  <div className={`flex items-center gap-3 rounded-2xl border border-border bg-card/60 p-4`}>
+                    <div className={`flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br ${pickedType.gradient} shadow-glow`}>
+                      <pickedType.icon className="h-5 w-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-foreground">{pickedType.title}</p>
+                      <p className={`text-xs ${pickedType.accent}`}>{pickedType.tagline}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Split name</label>
+                    <Input
+                      autoFocus
+                      value={splitName}
+                      onChange={(e) => setSplitName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") confirmName(); }}
+                      placeholder={pickedType.placeholder}
+                      className="h-12 rounded-xl border-border bg-[#252438] text-base text-foreground placeholder:text-muted-foreground"
+                    />
+                    <p className="text-[11px] text-muted-foreground">
+                      You can add anything inside — flights, dinner, tickets, whatever.
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={confirmName}
+                    disabled={!splitName.trim()}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#6C47FF] to-[#FF6B6B] p-3.5 text-sm font-bold text-white shadow-glow transition-smooth disabled:opacity-40 disabled:shadow-none"
+                  >
+                    Create & add expenses <ArrowRight className="h-4 w-4" />
+                  </button>
                 </div>
                 <button
                   onClick={() => setStep("type")}
