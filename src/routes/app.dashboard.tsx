@@ -1,9 +1,37 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import {
+  Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus, Wand2,
+  Hotel, Car, Ticket, Coffee, Waves, Mountain, ShoppingBag, Music,
+} from "lucide-react";
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+} from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/app/dashboard")({
   component: Dashboard,
 });
+
+const ACTIVITIES: Record<string, { id: string; label: string; icon: any; color: string }[]> = {
+  trip: [
+    { id: "flights", label: "Flights", icon: Plane, color: "from-[#6C47FF] to-[#A78BFF]" },
+    { id: "hotel", label: "Hotel / Stay", icon: Hotel, color: "from-[#FF6B6B] to-[#FF9A8B]" },
+    { id: "scuba", label: "Scuba / Activity", icon: Waves, color: "from-[#00C896] to-[#5DE0C0]" },
+    { id: "cabs", label: "Cabs / Transfers", icon: Car, color: "from-[#FFB347] to-[#FFD89B]" },
+    { id: "trek", label: "Trek / Tour", icon: Mountain, color: "from-[#6C47FF] to-[#FF6B6B]" },
+    { id: "shop", label: "Shopping", icon: ShoppingBag, color: "from-[#FF6B6B] to-[#6C47FF]" },
+  ],
+  dayout: [
+    { id: "tickets", label: "Park Tickets", icon: Ticket, color: "from-[#FFB347] to-[#FF6B6B]" },
+    { id: "fuel", label: "Fuel / Cab", icon: Car, color: "from-[#00C896] to-[#FFB347]" },
+    { id: "snacks", label: "Snacks", icon: Coffee, color: "from-[#FF6B6B] to-[#FFB347]" },
+    { id: "concert", label: "Concert / Event", icon: Music, color: "from-[#6C47FF] to-[#FF6B6B]" },
+  ],
+  bite: [
+    { id: "dinner", label: "Dinner", icon: UtensilsCrossed, color: "from-[#00C896] to-[#6C47FF]" },
+    { id: "cafe", label: "Café / Drinks", icon: Coffee, color: "from-[#FFB347] to-[#00C896]" },
+  ],
+};
 
 const MODES = [
   {
@@ -42,6 +70,27 @@ const MODES = [
 ] as const;
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<"type" | "activity">("type");
+  const [pickedType, setPickedType] = useState<(typeof MODES)[number] | null>(null);
+
+  const openCreate = () => {
+    setStep("type");
+    setPickedType(null);
+    setOpen(true);
+  };
+
+  const pickType = (m: (typeof MODES)[number]) => {
+    setPickedType(m);
+    setStep("activity");
+  };
+
+  const pickActivity = () => {
+    setOpen(false);
+    navigate({ to: "/app/add-expense" });
+  };
+
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -53,6 +102,27 @@ function Dashboard() {
           A
         </div>
       </header>
+
+      {/* Create Split CTA */}
+      <button
+        onClick={openCreate}
+        className="group relative flex w-full items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-r from-[#6C47FF] to-[#FF6B6B] p-5 text-left shadow-glow-lg transition-smooth hover:shadow-glow"
+      >
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+            <Wand2 className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <p className="text-base font-bold text-white">Create a Split</p>
+            <p className="text-xs text-white/80">Choose split type → pick activity</p>
+          </div>
+        </div>
+        <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-pill bg-white/20 backdrop-blur">
+          <Plus className="h-5 w-5 text-white" />
+        </div>
+        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
+      </button>
+
 
       {/* AI suggest banner */}
       <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-[#1C1B29] via-[#241B3A] to-[#1C1B29] p-5 shadow-glow">
@@ -81,10 +151,10 @@ function Dashboard() {
           {MODES.map((m) => {
             const Icon = m.icon;
             return (
-              <Link
+              <button
                 key={m.id}
-                to="/app/add-expense"
-                className={`group relative block overflow-hidden rounded-2xl border border-border bg-card p-5 transition-smooth hover:ring-2 ${m.ring} hover:border-transparent`}
+                onClick={() => { openCreate(); pickType(m); }}
+                className={`group relative block w-full text-left overflow-hidden rounded-2xl border border-border bg-card p-5 transition-smooth hover:ring-2 ${m.ring} hover:border-transparent`}
               >
                 {/* gradient halo */}
                 <div
@@ -115,7 +185,7 @@ function Dashboard() {
                     </div>
                   </div>
                 </div>
-              </Link>
+              </button>
             );
           })}
         </div>
@@ -163,6 +233,76 @@ function Dashboard() {
       >
         <Plus className="h-4 w-4" /> Start something custom
       </Link>
+
+      {/* Create Split Sheet */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="bottom" className="rounded-t-3xl border-border bg-[#1C1B29] p-0">
+          <div className="mx-auto max-w-2xl p-6">
+            <SheetHeader className="text-left">
+              <SheetTitle className="text-xl text-foreground">
+                {step === "type" ? "What type of split?" : `Pick activity for ${pickedType?.title}`}
+              </SheetTitle>
+              <SheetDescription>
+                {step === "type"
+                  ? "Choose how big this is — we'll tailor the flow."
+                  : "Tag the activity so AI can categorise & report it."}
+              </SheetDescription>
+            </SheetHeader>
+
+            {step === "type" && (
+              <div className="mt-5 space-y-3">
+                {MODES.map((m) => {
+                  const Icon = m.icon;
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => pickType(m)}
+                      className={`flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:ring-2 ${m.ring}`}
+                    >
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${m.gradient} shadow-glow`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-foreground">{m.title}</p>
+                        <p className={`text-xs ${m.accent}`}>{m.tagline}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {step === "activity" && pickedType && (
+              <>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  {ACTIVITIES[pickedType.id].map((a) => {
+                    const Icon = a.icon;
+                    return (
+                      <button
+                        key={a.id}
+                        onClick={pickActivity}
+                        className="group flex flex-col items-start gap-2 rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:border-primary/40 hover:shadow-glow"
+                      >
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${a.color}`}>
+                          <Icon className="h-5 w-5 text-white" />
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">{a.label}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => setStep("type")}
+                  className="mt-4 w-full rounded-xl border border-border bg-background/40 p-3 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  ← Change split type
+                </button>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
