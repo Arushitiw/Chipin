@@ -1,9 +1,37 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useState } from "react";
+import {
+  Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus, Wand2,
+  Hotel, Car, Ticket, Coffee, Waves, Mountain, ShoppingBag, Music,
+} from "lucide-react";
+import {
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
+} from "@/components/ui/sheet";
 
 export const Route = createFileRoute("/app/dashboard")({
   component: Dashboard,
 });
+
+const ACTIVITIES: Record<string, { id: string; label: string; icon: any; color: string }[]> = {
+  trip: [
+    { id: "flights", label: "Flights", icon: Plane, color: "from-[#6C47FF] to-[#A78BFF]" },
+    { id: "hotel", label: "Hotel / Stay", icon: Hotel, color: "from-[#FF6B6B] to-[#FF9A8B]" },
+    { id: "scuba", label: "Scuba / Activity", icon: Waves, color: "from-[#00C896] to-[#5DE0C0]" },
+    { id: "cabs", label: "Cabs / Transfers", icon: Car, color: "from-[#FFB347] to-[#FFD89B]" },
+    { id: "trek", label: "Trek / Tour", icon: Mountain, color: "from-[#6C47FF] to-[#FF6B6B]" },
+    { id: "shop", label: "Shopping", icon: ShoppingBag, color: "from-[#FF6B6B] to-[#6C47FF]" },
+  ],
+  dayout: [
+    { id: "tickets", label: "Park Tickets", icon: Ticket, color: "from-[#FFB347] to-[#FF6B6B]" },
+    { id: "fuel", label: "Fuel / Cab", icon: Car, color: "from-[#00C896] to-[#FFB347]" },
+    { id: "snacks", label: "Snacks", icon: Coffee, color: "from-[#FF6B6B] to-[#FFB347]" },
+    { id: "concert", label: "Concert / Event", icon: Music, color: "from-[#6C47FF] to-[#FF6B6B]" },
+  ],
+  bite: [
+    { id: "dinner", label: "Dinner", icon: UtensilsCrossed, color: "from-[#00C896] to-[#6C47FF]" },
+    { id: "cafe", label: "Café / Drinks", icon: Coffee, color: "from-[#FFB347] to-[#00C896]" },
+  ],
+};
 
 const MODES = [
   {
