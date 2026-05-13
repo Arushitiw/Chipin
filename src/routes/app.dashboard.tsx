@@ -233,6 +233,76 @@ function Dashboard() {
       >
         <Plus className="h-4 w-4" /> Start something custom
       </Link>
+
+      {/* Create Split Sheet */}
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetContent side="bottom" className="rounded-t-3xl border-border bg-[#1C1B29] p-0">
+          <div className="mx-auto max-w-2xl p-6">
+            <SheetHeader className="text-left">
+              <SheetTitle className="text-xl text-foreground">
+                {step === "type" ? "What type of split?" : `Pick activity for ${pickedType?.title}`}
+              </SheetTitle>
+              <SheetDescription>
+                {step === "type"
+                  ? "Choose how big this is — we'll tailor the flow."
+                  : "Tag the activity so AI can categorise & report it."}
+              </SheetDescription>
+            </SheetHeader>
+
+            {step === "type" && (
+              <div className="mt-5 space-y-3">
+                {MODES.map((m) => {
+                  const Icon = m.icon;
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => pickType(m)}
+                      className={`flex w-full items-center gap-3 rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:ring-2 ${m.ring}`}
+                    >
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br ${m.gradient} shadow-glow`}>
+                        <Icon className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-foreground">{m.title}</p>
+                        <p className={`text-xs ${m.accent}`}>{m.tagline}</p>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {step === "activity" && pickedType && (
+              <>
+                <div className="mt-5 grid grid-cols-2 gap-3">
+                  {ACTIVITIES[pickedType.id].map((a) => {
+                    const Icon = a.icon;
+                    return (
+                      <button
+                        key={a.id}
+                        onClick={pickActivity}
+                        className="group flex flex-col items-start gap-2 rounded-2xl border border-border bg-card p-4 text-left transition-smooth hover:border-primary/40 hover:shadow-glow"
+                      >
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${a.color}`}>
+                          <Icon className="h-5 w-5 text-white" />
+                        </div>
+                        <p className="text-sm font-semibold text-foreground">{a.label}</p>
+                      </button>
+                    );
+                  })}
+                </div>
+                <button
+                  onClick={() => setStep("type")}
+                  className="mt-4 w-full rounded-xl border border-border bg-background/40 p-3 text-sm text-muted-foreground hover:text-foreground"
+                >
+                  ← Change split type
+                </button>
+              </>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }
