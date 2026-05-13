@@ -70,6 +70,27 @@ const MODES = [
 ] as const;
 
 function Dashboard() {
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<"type" | "activity">("type");
+  const [pickedType, setPickedType] = useState<(typeof MODES)[number] | null>(null);
+
+  const openCreate = () => {
+    setStep("type");
+    setPickedType(null);
+    setOpen(true);
+  };
+
+  const pickType = (m: (typeof MODES)[number]) => {
+    setPickedType(m);
+    setStep("activity");
+  };
+
+  const pickActivity = () => {
+    setOpen(false);
+    navigate({ to: "/app/add-expense" });
+  };
+
   return (
     <div className="space-y-6">
       <header className="flex items-center justify-between">
@@ -81,6 +102,27 @@ function Dashboard() {
           A
         </div>
       </header>
+
+      {/* Create Split CTA */}
+      <button
+        onClick={openCreate}
+        className="group relative flex w-full items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-r from-[#6C47FF] to-[#FF6B6B] p-5 text-left shadow-glow-lg transition-smooth hover:shadow-glow"
+      >
+        <div className="relative z-10 flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 backdrop-blur">
+            <Wand2 className="h-6 w-6 text-white" />
+          </div>
+          <div>
+            <p className="text-base font-bold text-white">Create a Split</p>
+            <p className="text-xs text-white/80">Choose split type → pick activity</p>
+          </div>
+        </div>
+        <div className="relative z-10 flex h-10 w-10 items-center justify-center rounded-pill bg-white/20 backdrop-blur">
+          <Plus className="h-5 w-5 text-white" />
+        </div>
+        <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/20 blur-2xl" />
+      </button>
+
 
       {/* AI suggest banner */}
       <div className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-[#1C1B29] via-[#241B3A] to-[#1C1B29] p-5 shadow-glow">
