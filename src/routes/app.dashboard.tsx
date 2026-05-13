@@ -238,12 +238,12 @@ function Dashboard() {
           <div className="mx-auto max-w-2xl p-6">
             <SheetHeader className="text-left">
               <SheetTitle className="text-xl text-foreground">
-                {step === "type" ? "What type of split?" : `Pick activity for ${pickedType?.title}`}
+                {step === "type" ? "What type of split?" : `Name your ${pickedType?.title.toLowerCase()}`}
               </SheetTitle>
               <SheetDescription>
                 {step === "type"
                   ? "Choose how big this is — we'll tailor the flow."
-                  : "Tag the activity so AI can categorise & report it."}
+                  : "Call it whatever you want. You can add anything inside."}
               </SheetDescription>
             </SheetHeader>
 
