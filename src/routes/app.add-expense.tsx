@@ -1,10 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ArrowLeft, Camera, Search, Upload, Check } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { ArrowLeft, Camera, Search, Upload, Check, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { cn } from "@/lib/utils";
+import { scanReceipt } from "@/lib/receipt-scan.functions";
+import { toast } from "sonner";
+
+type ExpenseSearch = { type?: string; name?: string };
 
 export const Route = createFileRoute("/app/add-expense")({
   component: AddExpense,
+  validateSearch: (s: Record<string, unknown>): ExpenseSearch => ({
+    type: typeof s.type === "string" ? s.type : undefined,
+    name: typeof s.name === "string" ? s.name : undefined,
+  }),
 });
 
 const CURRENCIES = [
