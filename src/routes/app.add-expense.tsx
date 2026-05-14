@@ -363,15 +363,31 @@ function AddExpense() {
       <Section label="RECEIPT">
         <button
           type="button"
-          className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-card/40 px-4 py-8 transition-smooth hover:border-primary hover:bg-card"
+          onClick={() => fileRef.current?.click()}
+          disabled={scanning}
+          className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-card/40 px-4 py-8 transition-smooth hover:border-primary hover:bg-card disabled:opacity-60"
         >
-          <Camera className="h-7 w-7 text-foreground" />
-          <span className="text-base font-semibold text-foreground">
-            Snap or upload receipt
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Restaurant? Everyone marks their order →
-          </span>
+          {scanning ? (
+            <>
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+              <span className="text-base font-semibold text-foreground">
+                Scanning receipt with AI…
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Reading items, prices & totals
+              </span>
+            </>
+          ) : (
+            <>
+              <Camera className="h-7 w-7 text-foreground" />
+              <span className="text-base font-semibold text-foreground">
+                Snap or upload receipt
+              </span>
+              <span className="text-xs text-muted-foreground">
+                AI scans it → everyone ticks what they ate →
+              </span>
+            </>
+          )}
         </button>
       </Section>
 
