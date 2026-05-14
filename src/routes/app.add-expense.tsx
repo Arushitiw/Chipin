@@ -111,12 +111,6 @@ function AddExpense() {
       if (fileRef.current) fileRef.current.value = "";
     }
   };
-    arjun: true,
-    rohan: true,
-    sneha: true,
-    priya: false,
-    karan: false,
-  });
 
   const numAmount = parseFloat(amount) || 0;
   const inrAmount = Math.round(numAmount * currency.rate);
