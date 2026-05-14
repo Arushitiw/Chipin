@@ -1,5 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useState, useMemo } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useMemo, useState } from "react";
+import { Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/app/receipt-split")({
   component: ReceiptSplit,
@@ -17,7 +18,7 @@ const members: Member[] = [
 
 type Item = { id: string; emoji: string; name: string; qty: number; price: number };
 
-const items: Item[] = [
+const DEFAULT_ITEMS: Item[] = [
   { id: "noodles", emoji: "🍜", name: "Noodles", qty: 1, price: 280 },
   { id: "lime", emoji: "🥤", name: "Fresh Lime Soda", qty: 2, price: 180 },
   { id: "butter", emoji: "🍗", name: "Butter Chicken", qty: 1, price: 450 },
@@ -25,13 +26,56 @@ const items: Item[] = [
   { id: "icecream", emoji: "🍦", name: "Ice Cream", qty: 1, price: 120 },
 ];
 
-const SUBTOTAL = items.reduce((s, i) => s + i.price, 0);
-const GST = Math.round(SUBTOTAL * 0.18);
-const SERVICE = Math.round(SUBTOTAL * 0.05);
-const TOTAL = SUBTOTAL + GST + SERVICE;
-const TAX_MULT = TOTAL / SUBTOTAL;
-
 function ReceiptSplit() {
+  const [items, setItems] = useState<Item[]>(DEFAULT_ITEMS);
+  const [merchant, setMerchant] = useState<string | null>(null);
+  const [aiScanned, setAiScanned] = useState(false);
+
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem("chipin:scanned-receipt");
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed.items) && parsed.items.length) {
+        setItems(
+          parsed.items.map((i: { emoji: string; name: string; qty: number; price: number }, idx: number) => ({
+            id: `${idx}-${i.name}`,
+            emoji: i.emoji || "🍽",
+            name: i.name,
+            qty: i.qty || 1,
+            price: i.price || 0,
+          })),
+        );
+        setMerchant(parsed.merchant ?? null);
+        setAiScanned(true);
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const SUBTOTAL = useMemo(() => items.reduce((s, i) => s + i.price, 0), [items]);
+  const GST = Math.round(SUBTOTAL * 0.18);
+  const SERVICE = Math.round(SUBTOTAL * 0.05);
+  const TOTAL = SUBTOTAL + GST + SERVICE;
+  const TAX_MULT = SUBTOTAL > 0 ? TOTAL / SUBTOTAL : 1;
+
+  return <ReceiptSplitInner items={items} members={members} merchant={merchant} aiScanned={aiScanned} SUBTOTAL={SUBTOTAL} GST={GST} SERVICE={SERVICE} TOTAL={TOTAL} TAX_MULT={TAX_MULT} />;
+}
+
+function ReceiptSplitInner({
+  items, members, merchant, aiScanned, SUBTOTAL, GST, SERVICE, TOTAL, TAX_MULT,
+}: {
+  items: Item[];
+  members: Member[];
+  merchant: string | null;
+  aiScanned: boolean;
+  SUBTOTAL: number;
+  GST: number;
+  SERVICE: number;
+  TOTAL: number;
+  TAX_MULT: number;
+}) {
   const [claims, setClaims] = useState<Record<string, string[]>>({});
 
   const toggleClaim = (itemId: string, memberId: string) => {
@@ -64,17 +108,35 @@ function ReceiptSplit() {
 
   return (
     <div className="space-y-6">
-      <header>
+      <header className="space-y-1">
         <h1 className="text-2xl font-bold text-foreground">What did everyone order?</h1>
         <p className="text-sm text-muted-foreground">
           Tap items to claim — bill splits automatically
         </p>
+        {aiScanned && (
+          <div className="mt-2 inline-flex items-center gap-2 rounded-pill border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <Sparkles className="h-3.5 w-3.5" />
+            AI scanned{merchant ? ` · ${merchant}` : ""} · {items.length} items
+          </div>
+        )}
+        {!aiScanned && (
+          <Link
+            to="/app/add-expense"
+            className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+          >
+            ← Scan a real receipt with AI
+          </Link>
+        )}
       </header>
 
       <div className="space-y-3">
         {items.map((item) => {
           const claimed = claims[item.id] ?? [];
           const isClaimed = claimed.length > 0;
+          const claimedNames = claimed
+            .map((id) => members.find((m) => m.id === id)?.name)
+            .filter(Boolean)
+            .join(", ");
           return (
             <div
               key={item.id}
@@ -92,10 +154,10 @@ function ReceiptSplit() {
                     </p>
                     {isClaimed ? (
                       <p className="text-xs text-success">
-                        Claimed by {claimed.length} — ₹{(item.price / claimed.length).toFixed(0)} each
+                        {claimedNames} · ₹{(item.price / claimed.length).toFixed(0)} each
                       </p>
                     ) : (
-                      <p className="text-xs text-accent">Unclaimed</p>
+                      <p className="text-xs text-accent">Unclaimed — tap an avatar</p>
                     )}
                   </div>
                   <p className="font-bold text-foreground">₹{item.price}</p>

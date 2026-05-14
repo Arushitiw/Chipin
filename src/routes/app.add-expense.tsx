@@ -1,10 +1,19 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { ArrowLeft, Camera, Search, Upload, Check } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
+import { ArrowLeft, Camera, Search, Upload, Check, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { cn } from "@/lib/utils";
+import { scanReceipt } from "@/lib/receipt-scan.functions";
+import { toast } from "sonner";
+
+type ExpenseSearch = { type?: string; name?: string };
 
 export const Route = createFileRoute("/app/add-expense")({
   component: AddExpense,
+  validateSearch: (s: Record<string, unknown>): ExpenseSearch => ({
+    type: typeof s.type === "string" ? s.type : undefined,
+    name: typeof s.name === "string" ? s.name : undefined,
+  }),
 });
 
 const CURRENCIES = [
@@ -43,12 +52,21 @@ const MEMBERS = [
 
 function AddExpense() {
   const navigate = useNavigate();
+  const routeSearch = Route.useSearch();
+  const splitType = routeSearch.type;
+  const splitName = routeSearch.name;
+  const isBite = splitType === "bite";
+
+  const visibleCategories = isBite
+    ? CATEGORIES.filter((c) => c.id === "food")
+    : CATEGORIES;
+
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState(CURRENCIES[2]); // EUR default for ~3753
+  const [currency, setCurrency] = useState(CURRENCIES[2]);
   const [currencyOpen, setCurrencyOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("food");
+  const [category, setCategory] = useState(isBite ? "food" : "food");
   const [paidBy, setPaidBy] = useState("arjun");
   const [participants, setParticipants] = useState<Record<string, boolean>>({
     arjun: true,
@@ -57,6 +75,42 @@ function AddExpense() {
     priya: false,
     karan: false,
   });
+  const [scanning, setScanning] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const scan = useServerFn(scanReceipt);
+
+  const handleReceiptFile = async (file: File) => {
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) {
+      toast.error("Image too large — keep it under 6MB");
+      return;
+    }
+    setScanning(true);
+    try {
+      const dataUrl: string = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result as string);
+        r.onerror = () => rej(r.error);
+        r.readAsDataURL(file);
+      });
+      const result = await scan({ data: { imageDataUrl: dataUrl } });
+      if (!result.items.length) {
+        toast.error("No items found on the receipt");
+        return;
+      }
+      sessionStorage.setItem(
+        "chipin:scanned-receipt",
+        JSON.stringify({ ...result, scannedAt: Date.now() }),
+      );
+      toast.success(`Found ${result.items.length} items — claim away!`);
+      navigate({ to: "/app/receipt-split" });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't scan receipt");
+    } finally {
+      setScanning(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
 
   const numAmount = parseFloat(amount) || 0;
   const inrAmount = Math.round(numAmount * currency.rate);
@@ -85,15 +139,33 @@ function AddExpense() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold leading-tight">Add Expense</h1>
-            <p className="text-sm text-muted-foreground">Bali 2025</p>
+            <h1 className="text-xl font-bold leading-tight">
+              {splitName ?? "Add Expense"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {splitType ? `${splitType === "bite" ? "Quick Bite" : splitType === "trip" ? "Full Trip" : splitType === "dayout" ? "Day Out" : "Custom"} · add an expense` : "Bali 2025"}
+            </p>
           </div>
         </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleReceiptFile(f);
+          }}
+        />
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow"
+          onClick={() => fileRef.current?.click()}
+          disabled={scanning}
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow disabled:opacity-60"
+          aria-label="Upload receipt"
         >
-          <Upload className="h-5 w-5" />
+          {scanning ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
         </button>
       </header>
 
@@ -175,7 +247,7 @@ function AddExpense() {
       {/* Category */}
       <Section label="CATEGORY">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [&::-webkit-scrollbar]:hidden">
-          {CATEGORIES.map((c) => {
+          {visibleCategories.map((c) => {
             const active = category === c.id;
             return (
               <button
@@ -291,15 +363,31 @@ function AddExpense() {
       <Section label="RECEIPT">
         <button
           type="button"
-          className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-card/40 px-4 py-8 transition-smooth hover:border-primary hover:bg-card"
+          onClick={() => fileRef.current?.click()}
+          disabled={scanning}
+          className="flex w-full flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-primary/40 bg-card/40 px-4 py-8 transition-smooth hover:border-primary hover:bg-card disabled:opacity-60"
         >
-          <Camera className="h-7 w-7 text-foreground" />
-          <span className="text-base font-semibold text-foreground">
-            Snap or upload receipt
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Restaurant? Everyone marks their order →
-          </span>
+          {scanning ? (
+            <>
+              <Loader2 className="h-7 w-7 animate-spin text-primary" />
+              <span className="text-base font-semibold text-foreground">
+                Scanning receipt with AI…
+              </span>
+              <span className="text-xs text-muted-foreground">
+                Reading items, prices & totals
+              </span>
+            </>
+          ) : (
+            <>
+              <Camera className="h-7 w-7 text-foreground" />
+              <span className="text-base font-semibold text-foreground">
+                Snap or upload receipt
+              </span>
+              <span className="text-xs text-muted-foreground">
+                AI scans it → everyone ticks what they ate →
+              </span>
+            </>
+          )}
         </button>
       </Section>
 
