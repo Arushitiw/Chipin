@@ -52,9 +52,9 @@ const MEMBERS = [
 
 function AddExpense() {
   const navigate = useNavigate();
-  const search = Route.useSearch();
-  const splitType = search.type;
-  const splitName = search.name;
+  const routeSearch = Route.useSearch();
+  const splitType = routeSearch.type;
+  const splitName = routeSearch.name;
   const isBite = splitType === "bite";
 
   const visibleCategories = isBite
@@ -65,7 +65,7 @@ function AddExpense() {
   const [amount, setAmount] = useState("");
   const [currency, setCurrency] = useState(CURRENCIES[2]);
   const [currencyOpen, setCurrencyOpen] = useState(false);
-  const [search2, setSearch2] = useState("");
+  const [search, setSearch] = useState("");
   const [category, setCategory] = useState(isBite ? "food" : "food");
   const [paidBy, setPaidBy] = useState("arjun");
   const [participants, setParticipants] = useState<Record<string, boolean>>({
