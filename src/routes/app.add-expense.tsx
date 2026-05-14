@@ -52,14 +52,65 @@ const MEMBERS = [
 
 function AddExpense() {
   const navigate = useNavigate();
+  const search = Route.useSearch();
+  const splitType = search.type;
+  const splitName = search.name;
+  const isBite = splitType === "bite";
+
+  const visibleCategories = isBite
+    ? CATEGORIES.filter((c) => c.id === "food")
+    : CATEGORIES;
+
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
-  const [currency, setCurrency] = useState(CURRENCIES[2]); // EUR default for ~3753
+  const [currency, setCurrency] = useState(CURRENCIES[2]);
   const [currencyOpen, setCurrencyOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [category, setCategory] = useState("food");
+  const [search2, setSearch2] = useState("");
+  const [category, setCategory] = useState(isBite ? "food" : "food");
   const [paidBy, setPaidBy] = useState("arjun");
   const [participants, setParticipants] = useState<Record<string, boolean>>({
+    arjun: true,
+    rohan: true,
+    sneha: true,
+    priya: false,
+    karan: false,
+  });
+  const [scanning, setScanning] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const scan = useServerFn(scanReceipt);
+
+  const handleReceiptFile = async (file: File) => {
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) {
+      toast.error("Image too large — keep it under 6MB");
+      return;
+    }
+    setScanning(true);
+    try {
+      const dataUrl: string = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result as string);
+        r.onerror = () => rej(r.error);
+        r.readAsDataURL(file);
+      });
+      const result = await scan({ data: { imageDataUrl: dataUrl } });
+      if (!result.items.length) {
+        toast.error("No items found on the receipt");
+        return;
+      }
+      sessionStorage.setItem(
+        "chipin:scanned-receipt",
+        JSON.stringify({ ...result, scannedAt: Date.now() }),
+      );
+      toast.success(`Found ${result.items.length} items — claim away!`);
+      navigate({ to: "/app/receipt-split" });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't scan receipt");
+    } finally {
+      setScanning(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
     arjun: true,
     rohan: true,
     sneha: true,
