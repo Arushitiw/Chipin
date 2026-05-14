@@ -108,17 +108,35 @@ function ReceiptSplitInner({
 
   return (
     <div className="space-y-6">
-      <header>
+      <header className="space-y-1">
         <h1 className="text-2xl font-bold text-foreground">What did everyone order?</h1>
         <p className="text-sm text-muted-foreground">
           Tap items to claim — bill splits automatically
         </p>
+        {aiScanned && (
+          <div className="mt-2 inline-flex items-center gap-2 rounded-pill border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
+            <Sparkles className="h-3.5 w-3.5" />
+            AI scanned{merchant ? ` · ${merchant}` : ""} · {items.length} items
+          </div>
+        )}
+        {!aiScanned && (
+          <Link
+            to="/app/add-expense"
+            className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
+          >
+            ← Scan a real receipt with AI
+          </Link>
+        )}
       </header>
 
       <div className="space-y-3">
         {items.map((item) => {
           const claimed = claims[item.id] ?? [];
           const isClaimed = claimed.length > 0;
+          const claimedNames = claimed
+            .map((id) => members.find((m) => m.id === id)?.name)
+            .filter(Boolean)
+            .join(", ");
           return (
             <div
               key={item.id}
@@ -136,10 +154,10 @@ function ReceiptSplitInner({
                     </p>
                     {isClaimed ? (
                       <p className="text-xs text-success">
-                        Claimed by {claimed.length} — ₹{(item.price / claimed.length).toFixed(0)} each
+                        {claimedNames} · ₹{(item.price / claimed.length).toFixed(0)} each
                       </p>
                     ) : (
-                      <p className="text-xs text-accent">Unclaimed</p>
+                      <p className="text-xs text-accent">Unclaimed — tap an avatar</p>
                     )}
                   </div>
                   <p className="font-bold text-foreground">₹{item.price}</p>
