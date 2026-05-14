@@ -139,15 +139,33 @@ function AddExpense() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold leading-tight">Add Expense</h1>
-            <p className="text-sm text-muted-foreground">Bali 2025</p>
+            <h1 className="text-xl font-bold leading-tight">
+              {splitName ?? "Add Expense"}
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {splitType ? `${splitType === "bite" ? "Quick Bite" : splitType === "trip" ? "Full Trip" : splitType === "dayout" ? "Day Out" : "Custom"} · add an expense` : "Bali 2025"}
+            </p>
           </div>
         </div>
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) handleReceiptFile(f);
+          }}
+        />
         <button
           type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow"
+          onClick={() => fileRef.current?.click()}
+          disabled={scanning}
+          className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-primary text-primary-foreground shadow-glow disabled:opacity-60"
+          aria-label="Upload receipt"
         >
-          <Upload className="h-5 w-5" />
+          {scanning ? <Loader2 className="h-5 w-5 animate-spin" /> : <Upload className="h-5 w-5" />}
         </button>
       </header>
 
