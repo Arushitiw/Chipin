@@ -86,7 +86,10 @@ function Dashboard() {
   const confirmName = () => {
     if (!splitName.trim() || !pickedType) return;
     setOpen(false);
-    navigate({ to: "/app/add-expense" });
+    navigate({
+      to: "/app/add-expense",
+      search: { type: pickedType.id, name: splitName.trim() },
+    });
   };
 
   return (
