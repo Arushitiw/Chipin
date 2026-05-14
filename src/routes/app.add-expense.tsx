@@ -247,7 +247,7 @@ function AddExpense() {
       {/* Category */}
       <Section label="CATEGORY">
         <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-2 [&::-webkit-scrollbar]:hidden">
-          {CATEGORIES.map((c) => {
+          {visibleCategories.map((c) => {
             const active = category === c.id;
             return (
               <button
