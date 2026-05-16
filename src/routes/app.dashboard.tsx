@@ -316,6 +316,56 @@ function Dashboard() {
                     </p>
                   </div>
 
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground">Start date</label>
+                      <Input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => setStartDate(e.target.value)}
+                        className="h-11 rounded-xl border-border bg-[#252438] text-sm text-foreground"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-xs font-medium text-muted-foreground">End date</label>
+                      <Input
+                        type="date"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        className="h-11 rounded-xl border-border bg-[#252438] text-sm text-foreground"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">Base currency</label>
+                    <select
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                      className="h-11 w-full rounded-xl border border-border bg-[#252438] px-3 text-sm text-foreground"
+                    >
+                      {CURRENCIES.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.flag} {c.code} — {c.name} ({c.symbol})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-muted-foreground">
+                      Max members <span className="text-muted-foreground/60">(optional)</span>
+                    </label>
+                    <Input
+                      type="number"
+                      min={2}
+                      value={maxMembers}
+                      onChange={(e) => setMaxMembers(e.target.value)}
+                      placeholder="No cap"
+                      className="h-11 rounded-xl border-border bg-[#252438] text-sm text-foreground placeholder:text-muted-foreground"
+                    />
+                  </div>
+
                   <button
                     onClick={confirmName}
                     disabled={!splitName.trim()}
