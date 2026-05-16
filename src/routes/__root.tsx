@@ -69,10 +69,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    return subscribeJoins((e) => {
+      toast(`${e.name} just joined the trip 🎉`, { position: "top-center" });
+    });
+  }, []);
   return (
     <>
       <Outlet />
-      <Toaster />
+      <Toaster position="top-center" duration={3000} />
     </>
   );
 }
