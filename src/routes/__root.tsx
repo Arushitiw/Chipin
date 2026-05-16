@@ -1,5 +1,8 @@
 import { Outlet, Link, createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { subscribeJoins } from "@/lib/trips";
 
 import appCss from "../styles.css?url";
 
@@ -66,10 +69,15 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  useEffect(() => {
+    return subscribeJoins((e) => {
+      toast(`${e.name} just joined the trip 🎉`, { position: "top-center" });
+    });
+  }, []);
   return (
     <>
       <Outlet />
-      <Toaster />
+      <Toaster position="top-center" duration={3000} />
     </>
   );
 }
