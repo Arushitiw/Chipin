@@ -70,11 +70,19 @@ function Dashboard() {
   const [step, setStep] = useState<"type" | "name">("type");
   const [pickedType, setPickedType] = useState<(typeof MODES)[number] | null>(null);
   const [splitName, setSplitName] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [currency, setCurrency] = useState("INR");
+  const [maxMembers, setMaxMembers] = useState("");
 
   const openCreate = () => {
     setStep("type");
     setPickedType(null);
     setSplitName("");
+    setStartDate("");
+    setEndDate("");
+    setCurrency("INR");
+    setMaxMembers("");
     setOpen(true);
   };
 
@@ -86,11 +94,16 @@ function Dashboard() {
 
   const confirmName = () => {
     if (!splitName.trim() || !pickedType) return;
-    setOpen(false);
-    navigate({
-      to: "/app/add-expense",
-      search: { type: pickedType.id, name: splitName.trim() },
+    const trip = createTrip({
+      name: splitName.trim(),
+      type: pickedType.id,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+      currency,
+      maxMembers: maxMembers ? Number(maxMembers) : undefined,
     });
+    setOpen(false);
+    navigate({ to: "/app/trip/$id/invite", params: { id: trip.id } });
   };
 
   return (
