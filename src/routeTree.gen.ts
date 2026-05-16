@@ -18,6 +18,7 @@ import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppBalancesRouteImport } from './routes/app.balances'
 import { Route as AppAddExpenseRouteImport } from './routes/app.add-expense'
 import { Route as AppTripIdRouteImport } from './routes/app.trip.$id'
+import { Route as AppTripIdSettingsRouteImport } from './routes/app.trip.$id.settings'
 import { Route as AppTripIdInviteRouteImport } from './routes/app.trip.$id.invite'
 
 const AppRoute = AppRouteImport.update({
@@ -65,6 +66,11 @@ const AppTripIdRoute = AppTripIdRouteImport.update({
   path: '/trip/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTripIdSettingsRoute = AppTripIdSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppTripIdRoute,
+} as any)
 const AppTripIdInviteRoute = AppTripIdInviteRouteImport.update({
   id: '/invite',
   path: '/invite',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/join/$inviteCode': typeof JoinInviteCodeRoute
   '/app/trip/$id': typeof AppTripIdRouteWithChildren
   '/app/trip/$id/invite': typeof AppTripIdInviteRoute
+  '/app/trip/$id/settings': typeof AppTripIdSettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/join/$inviteCode': typeof JoinInviteCodeRoute
   '/app/trip/$id': typeof AppTripIdRouteWithChildren
   '/app/trip/$id/invite': typeof AppTripIdInviteRoute
+  '/app/trip/$id/settings': typeof AppTripIdSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/join/$inviteCode': typeof JoinInviteCodeRoute
   '/app/trip/$id': typeof AppTripIdRouteWithChildren
   '/app/trip/$id/invite': typeof AppTripIdInviteRoute
+  '/app/trip/$id/settings': typeof AppTripIdSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/join/$inviteCode'
     | '/app/trip/$id'
     | '/app/trip/$id/invite'
+    | '/app/trip/$id/settings'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/join/$inviteCode'
     | '/app/trip/$id'
     | '/app/trip/$id/invite'
+    | '/app/trip/$id/settings'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/join/$inviteCode'
     | '/app/trip/$id'
     | '/app/trip/$id/invite'
+    | '/app/trip/$id/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -218,6 +230,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTripIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/trip/$id/settings': {
+      id: '/app/trip/$id/settings'
+      path: '/settings'
+      fullPath: '/app/trip/$id/settings'
+      preLoaderRoute: typeof AppTripIdSettingsRouteImport
+      parentRoute: typeof AppTripIdRoute
+    }
     '/app/trip/$id/invite': {
       id: '/app/trip/$id/invite'
       path: '/invite'
@@ -230,10 +249,12 @@ declare module '@tanstack/react-router' {
 
 interface AppTripIdRouteChildren {
   AppTripIdInviteRoute: typeof AppTripIdInviteRoute
+  AppTripIdSettingsRoute: typeof AppTripIdSettingsRoute
 }
 
 const AppTripIdRouteChildren: AppTripIdRouteChildren = {
   AppTripIdInviteRoute: AppTripIdInviteRoute,
+  AppTripIdSettingsRoute: AppTripIdSettingsRoute,
 }
 
 const AppTripIdRouteWithChildren = AppTripIdRoute._addFileChildren(
