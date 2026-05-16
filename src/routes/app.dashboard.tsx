@@ -7,6 +7,7 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
+import { CURRENCIES, createTrip } from "@/lib/trips";
 
 export const Route = createFileRoute("/app/dashboard")({
   component: Dashboard,
