@@ -11,12 +11,14 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as JoinInviteCodeRouteImport } from './routes/join.$inviteCode'
 import { Route as AppReportRouteImport } from './routes/app.report'
 import { Route as AppReceiptSplitRouteImport } from './routes/app.receipt-split'
 import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
 import { Route as AppBalancesRouteImport } from './routes/app.balances'
 import { Route as AppAddExpenseRouteImport } from './routes/app.add-expense'
 import { Route as AppTripIdRouteImport } from './routes/app.trip.$id'
+import { Route as AppTripIdInviteRouteImport } from './routes/app.trip.$id.invite'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -26,6 +28,11 @@ const AppRoute = AppRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinInviteCodeRoute = JoinInviteCodeRouteImport.update({
+  id: '/join/$inviteCode',
+  path: '/join/$inviteCode',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppReportRoute = AppReportRouteImport.update({
@@ -58,6 +65,11 @@ const AppTripIdRoute = AppTripIdRouteImport.update({
   path: '/trip/$id',
   getParentRoute: () => AppRoute,
 } as any)
+const AppTripIdInviteRoute = AppTripIdInviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
+  getParentRoute: () => AppTripIdRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -67,7 +79,9 @@ export interface FileRoutesByFullPath {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/receipt-split': typeof AppReceiptSplitRoute
   '/app/report': typeof AppReportRoute
-  '/app/trip/$id': typeof AppTripIdRoute
+  '/join/$inviteCode': typeof JoinInviteCodeRoute
+  '/app/trip/$id': typeof AppTripIdRouteWithChildren
+  '/app/trip/$id/invite': typeof AppTripIdInviteRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -77,7 +91,9 @@ export interface FileRoutesByTo {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/receipt-split': typeof AppReceiptSplitRoute
   '/app/report': typeof AppReportRoute
-  '/app/trip/$id': typeof AppTripIdRoute
+  '/join/$inviteCode': typeof JoinInviteCodeRoute
+  '/app/trip/$id': typeof AppTripIdRouteWithChildren
+  '/app/trip/$id/invite': typeof AppTripIdInviteRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -88,7 +104,9 @@ export interface FileRoutesById {
   '/app/dashboard': typeof AppDashboardRoute
   '/app/receipt-split': typeof AppReceiptSplitRoute
   '/app/report': typeof AppReportRoute
-  '/app/trip/$id': typeof AppTripIdRoute
+  '/join/$inviteCode': typeof JoinInviteCodeRoute
+  '/app/trip/$id': typeof AppTripIdRouteWithChildren
+  '/app/trip/$id/invite': typeof AppTripIdInviteRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,7 +118,9 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/receipt-split'
     | '/app/report'
+    | '/join/$inviteCode'
     | '/app/trip/$id'
+    | '/app/trip/$id/invite'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -110,7 +130,9 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/receipt-split'
     | '/app/report'
+    | '/join/$inviteCode'
     | '/app/trip/$id'
+    | '/app/trip/$id/invite'
   id:
     | '__root__'
     | '/'
@@ -120,12 +142,15 @@ export interface FileRouteTypes {
     | '/app/dashboard'
     | '/app/receipt-split'
     | '/app/report'
+    | '/join/$inviteCode'
     | '/app/trip/$id'
+    | '/app/trip/$id/invite'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRouteWithChildren
+  JoinInviteCodeRoute: typeof JoinInviteCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -142,6 +167,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join/$inviteCode': {
+      id: '/join/$inviteCode'
+      path: '/join/$inviteCode'
+      fullPath: '/join/$inviteCode'
+      preLoaderRoute: typeof JoinInviteCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/report': {
@@ -186,8 +218,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppTripIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/trip/$id/invite': {
+      id: '/app/trip/$id/invite'
+      path: '/invite'
+      fullPath: '/app/trip/$id/invite'
+      preLoaderRoute: typeof AppTripIdInviteRouteImport
+      parentRoute: typeof AppTripIdRoute
+    }
   }
 }
+
+interface AppTripIdRouteChildren {
+  AppTripIdInviteRoute: typeof AppTripIdInviteRoute
+}
+
+const AppTripIdRouteChildren: AppTripIdRouteChildren = {
+  AppTripIdInviteRoute: AppTripIdInviteRoute,
+}
+
+const AppTripIdRouteWithChildren = AppTripIdRoute._addFileChildren(
+  AppTripIdRouteChildren,
+)
 
 interface AppRouteChildren {
   AppAddExpenseRoute: typeof AppAddExpenseRoute
@@ -195,7 +246,7 @@ interface AppRouteChildren {
   AppDashboardRoute: typeof AppDashboardRoute
   AppReceiptSplitRoute: typeof AppReceiptSplitRoute
   AppReportRoute: typeof AppReportRoute
-  AppTripIdRoute: typeof AppTripIdRoute
+  AppTripIdRoute: typeof AppTripIdRouteWithChildren
 }
 
 const AppRouteChildren: AppRouteChildren = {
@@ -204,7 +255,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppDashboardRoute: AppDashboardRoute,
   AppReceiptSplitRoute: AppReceiptSplitRoute,
   AppReportRoute: AppReportRoute,
-  AppTripIdRoute: AppTripIdRoute,
+  AppTripIdRoute: AppTripIdRouteWithChildren,
 }
 
 const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
@@ -212,7 +263,17 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRouteWithChildren,
+  JoinInviteCodeRoute: JoinInviteCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
