@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Sparkles, Plane, Sun, UtensilsCrossed, ArrowRight, Plus, Wand2, Wrench,
 } from "lucide-react";
@@ -7,7 +7,11 @@ import {
   Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription,
 } from "@/components/ui/sheet";
 import { Input } from "@/components/ui/input";
-import { CURRENCIES, createTrip } from "@/lib/trips";
+import { CURRENCIES, type Trip, createTrip } from "@/lib/trips";
+import { fetchTrips } from "@/lib/api";
+import {
+  EmptyState, ErrorState, ShimmerCard, SuitcaseIcon,
+} from "@/components/states";
 
 export const Route = createFileRoute("/app/dashboard")({
   component: Dashboard,
@@ -206,40 +210,9 @@ function Dashboard() {
         </div>
       </section>
 
-      {/* Active trips */}
-      <section className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-muted-foreground">Continue where you left off</h2>
-          <Link to="/app/balances" className="text-xs text-primary">
-            View all
-          </Link>
-        </div>
-        {[
-          { id: "1", name: "Bali 2025", sub: "Full trip · 5 members", balance: "+₹82,000", positive: true, emoji: "🌴" },
-          { id: "2", name: "Wonderla day out", sub: "Day out · 4 members", balance: "−₹450", positive: false, emoji: "🎢" },
-          { id: "3", name: "Toit dinner", sub: "Quick bite · 3 members", balance: "+₹620", positive: true, emoji: "🍻" },
-        ].map((t) => (
-          <Link
-            key={t.id}
-            to="/app/trip/$id"
-            params={{ id: t.id }}
-            className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-smooth hover:border-primary/40 hover:shadow-glow"
-          >
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-background text-xl">
-                {t.emoji}
-              </div>
-              <div>
-                <p className="font-semibold text-foreground">{t.name}</p>
-                <p className="text-xs text-muted-foreground">{t.sub}</p>
-              </div>
-            </div>
-            <span className={`text-sm font-bold ${t.positive ? "text-[#00C896]" : "text-[#FF4757]"}`}>
-              {t.balance}
-            </span>
-          </Link>
-        ))}
-      </section>
+      <ActiveTrips onCreate={openCreate} />
+
+      {/* Custom CTA */}
 
       {/* Custom CTA */}
       <Link
@@ -386,5 +359,80 @@ function Dashboard() {
         </SheetContent>
       </Sheet>
     </div>
+  );
+}
+
+const TYPE_EMOJI: Record<string, string> = {
+  trip: "🌴", dayout: "🎢", bite: "🍻", custom: "✨",
+};
+
+function ActiveTrips({ onCreate }: { onCreate: () => void }) {
+  const [trips, setTrips] = useState<Trip[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = () => {
+    setError(null);
+    setTrips(null);
+    fetchTrips()
+      .then(setTrips)
+      .catch(() => setError("Couldn't load your trips"));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-muted-foreground">Continue where you left off</h2>
+        <Link to="/app/balances" className="text-xs text-primary">View all</Link>
+      </div>
+
+      {trips === null && !error && (
+        <div className="space-y-2">
+          <ShimmerCard className="h-16" />
+          <ShimmerCard className="h-16" />
+        </div>
+      )}
+
+      {error && <ErrorState message={error} onRetry={load} />}
+
+      {trips && trips.length === 0 && (
+        <EmptyState
+          icon={<SuitcaseIcon />}
+          title="No trips yet"
+          subtitle="Create your first trip and invite your friends"
+          action={
+            <button
+              onClick={onCreate}
+              className="mt-2 inline-flex items-center gap-2 rounded-pill bg-gradient-to-r from-[#6C47FF] to-[#FF6B6B] px-5 py-2.5 text-sm font-semibold text-white shadow-glow"
+            >
+              <Plus className="h-4 w-4" /> Create a Trip
+            </button>
+          }
+        />
+      )}
+
+      {trips && trips.map((t) => (
+        <Link
+          key={t.id}
+          to="/app/trip/$id"
+          params={{ id: t.id }}
+          className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-smooth hover:border-primary/40 hover:shadow-glow"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-background text-xl">
+              {TYPE_EMOJI[t.type] || "🧾"}
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">{t.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {t.members.length} member{t.members.length === 1 ? "" : "s"} · {t.currency}
+              </p>
+            </div>
+          </div>
+          <span className="text-xs text-muted-foreground">Open →</span>
+        </Link>
+      ))}
+    </section>
   );
 }

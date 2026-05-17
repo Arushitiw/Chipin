@@ -1,36 +1,102 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { fetchTrips, fetchReport, type CategoryTotal, type PersonTotal } from "@/lib/api";
+import type { Trip } from "@/lib/trips";
+import {
+  EmptyState, ErrorState, ShimmerCard, GradientCTA, ReceiptIcon, SuitcaseIcon,
+} from "@/components/states";
 
 export const Route = createFileRoute("/app/report")({
   component: Report,
 });
 
-const CATEGORIES = [
-  { name: "Flights", value: 125000, pct: 58, color: "#6C47FF", emoji: "✈️" },
-  { name: "Hotel", value: 60000, pct: 28, color: "#FF6B6B", emoji: "🏨" },
-  { name: "Food", value: 18000, pct: 8, color: "#FFB347", emoji: "🍽️" },
-  { name: "Transport", value: 12000, pct: 6, color: "#00C896", emoji: "🚗" },
-];
+const PALETTE = ["#6C47FF", "#FF6B6B", "#FFB347", "#00C896", "#8B85FF", "#7FE6C8"];
+const fmt = (n: number) => `₹${Math.round(n).toLocaleString("en-IN")}`;
 
-const PEOPLE = [
-  { name: "Arjun", amount: 125000, pct: 100, initial: "A", color: "#6C47FF" },
-  { name: "Sneha", amount: 60000, pct: 48, initial: "S", color: "#FF6B6B" },
-  { name: "Rohan", amount: 18000, pct: 14, initial: "R", color: "#FFB347" },
-  { name: "Priya", amount: 12000, pct: 10, initial: "P", color: "#00C896" },
-  { name: "Karan", amount: 0, pct: 0, initial: "K", color: "#8B85FF" },
-];
-
-const fmt = (n: number) => `₹${n.toLocaleString("en-IN")}`;
+function fmtDateRange(start?: string, end?: string) {
+  if (!start && !end) return "";
+  const f = (d?: string) =>
+    d
+      ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short" })
+      : "?";
+  return `${f(start)} – ${f(end)}`;
+}
 
 function Report() {
+  const [trip, setTrip] = useState<Trip | null | undefined>(undefined);
+  const [data, setData] = useState<{
+    totalSpent: number;
+    categories: CategoryTotal[];
+    people: PersonTotal[];
+  } | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [hovered, setHovered] = useState<number | null>(null);
+
+  const load = () => {
+    setError(null);
+    setTrip(undefined);
+    setData(null);
+    fetchTrips()
+      .then(async (trips) => {
+        const latest = trips[0] || null;
+        setTrip(latest);
+        if (!latest) return;
+        const r = await fetchReport(latest.id);
+        setData(r);
+      })
+      .catch(() => setError("Couldn't load the report"));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  if (error) return <ErrorState message={error} onRetry={load} />;
+
+  if (trip === undefined) {
+    return (
+      <div className="space-y-4">
+        <ShimmerCard className="h-16" />
+        <ShimmerCard className="h-72" />
+        <ShimmerCard className="h-40" />
+      </div>
+    );
+  }
+
+  if (trip === null) {
+    return (
+      <EmptyState
+        icon={<SuitcaseIcon />}
+        title="No trips yet"
+        subtitle="Create your first trip and invite your friends"
+        action={<GradientCTA to="/app/dashboard">Create a Trip</GradientCTA>}
+      />
+    );
+  }
+
+  if (!data || data.totalSpent === 0) {
+    return (
+      <div className="space-y-6 pb-8">
+        <header>
+          <h1 className="text-2xl font-bold text-foreground">{trip.name} — Trip Report</h1>
+          <p className="text-sm text-muted-foreground">{fmtDateRange(trip.startDate, trip.endDate)}</p>
+        </header>
+        <EmptyState
+          icon={<ReceiptIcon />}
+          title="No expenses logged yet"
+          subtitle="Tap + to add the first expense — the report will populate automatically."
+        />
+      </div>
+    );
+  }
+
+  const cats = data.categories.map((c, i) => ({ ...c, color: PALETTE[i % PALETTE.length] }));
+  const top = cats[0];
 
   return (
     <div className="space-y-6 pb-8">
       <header>
-        <h1 className="text-2xl font-bold text-foreground">Bali 2025 — Trip Report</h1>
-        <p className="text-sm text-muted-foreground">Apr 18–25</p>
+        <h1 className="text-2xl font-bold text-foreground">{trip.name} — Trip Report</h1>
+        <p className="text-sm text-muted-foreground">{fmtDateRange(trip.startDate, trip.endDate)}</p>
       </header>
 
       {/* Donut */}
@@ -40,7 +106,7 @@ function Report() {
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <defs>
-                {CATEGORIES.map((c, i) => (
+                {cats.map((c, i) => (
                   <linearGradient key={i} id={`grad-${i}`} x1="0" y1="0" x2="1" y2="1">
                     <stop offset="0%" stopColor={c.color} stopOpacity={1} />
                     <stop offset="100%" stopColor={c.color} stopOpacity={0.55} />
@@ -48,7 +114,7 @@ function Report() {
                 ))}
               </defs>
               <Pie
-                data={CATEGORIES}
+                data={cats}
                 dataKey="value"
                 innerRadius={75}
                 outerRadius={110}
@@ -57,7 +123,7 @@ function Report() {
                 onMouseEnter={(_, i) => setHovered(i)}
                 onMouseLeave={() => setHovered(null)}
               >
-                {CATEGORIES.map((c, i) => (
+                {cats.map((c, i) => (
                   <Cell
                     key={i}
                     fill={`url(#grad-${i})`}
@@ -84,14 +150,13 @@ function Report() {
             </PieChart>
           </ResponsiveContainer>
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-            <p className="text-2xl font-bold text-foreground">₹2,15,000</p>
+            <p className="text-2xl font-bold text-foreground">{fmt(data.totalSpent)}</p>
             <p className="text-xs text-muted-foreground">Total</p>
           </div>
         </div>
 
-        {/* Category list */}
         <div className="mt-4 space-y-3">
-          {CATEGORIES.map((c, i) => (
+          {cats.map((c, i) => (
             <div key={c.name}>
               <div className="mb-1 flex items-center justify-between text-sm">
                 <span className="flex items-center gap-2 text-foreground">
@@ -99,7 +164,7 @@ function Report() {
                     className="h-2.5 w-2.5 rounded-full"
                     style={{ background: c.color, boxShadow: `0 0 8px ${c.color}` }}
                   />
-                  {c.emoji} {c.name}
+                  {c.name}
                 </span>
                 <span className="text-muted-foreground">
                   {fmt(c.value)} <span className="ml-2 text-xs">{c.pct}%</span>
@@ -124,13 +189,16 @@ function Report() {
       <div className="rounded-2xl border border-border bg-card p-5">
         <h2 className="mb-4 text-sm font-semibold text-muted-foreground">Who paid what</h2>
         <div className="space-y-4">
-          {PEOPLE.map((p) => (
+          {data.people.map((p, i) => (
             <div key={p.name} className="flex items-center gap-3">
               <div
                 className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                style={{ background: p.color, boxShadow: `0 0 10px ${p.color}66` }}
+                style={{
+                  background: PALETTE[i % PALETTE.length],
+                  boxShadow: `0 0 10px ${PALETTE[i % PALETTE.length]}66`,
+                }}
               >
-                {p.initial}
+                {p.name.charAt(0).toUpperCase()}
               </div>
               <div className="flex-1">
                 <div className="mb-1 flex items-center justify-between text-sm">
@@ -143,9 +211,7 @@ function Report() {
                     style={{
                       width: `${Math.max(p.pct, 1)}%`,
                       background:
-                        p.pct === 0
-                          ? "transparent"
-                          : "linear-gradient(90deg, #6C47FF, #FF6B6B)",
+                        p.pct === 0 ? "transparent" : "linear-gradient(90deg, #6C47FF, #FF6B6B)",
                       boxShadow: p.pct > 0 ? "0 0 10px rgba(108,71,255,0.5)" : "none",
                     }}
                   />
@@ -157,25 +223,28 @@ function Report() {
       </div>
 
       {/* Insight */}
-      <div
-        className="rounded-2xl p-[1.5px]"
-        style={{
-          background: "linear-gradient(135deg, #FFB347, #FF6B6B)",
-          boxShadow: "0 0 24px rgba(255,179,71,0.25)",
-        }}
-      >
-        <div className="rounded-2xl bg-card p-4">
-          <p className="text-sm leading-relaxed text-foreground">
-            <span className="mr-1">💡</span>
-            <span className="font-semibold">Flights took up 58% of your budget.</span>{" "}
-            <span className="text-muted-foreground">
-              Consider budget airlines next time!
-            </span>
-          </p>
+      {top && (
+        <div
+          className="rounded-2xl p-[1.5px]"
+          style={{
+            background: "linear-gradient(135deg, #FFB347, #FF6B6B)",
+            boxShadow: "0 0 24px rgba(255,179,71,0.25)",
+          }}
+        >
+          <div className="rounded-2xl bg-card p-4">
+            <p className="text-sm leading-relaxed text-foreground">
+              <span className="mr-1">💡</span>
+              <span className="font-semibold">
+                {top.name} took up {top.pct}% of your budget.
+              </span>{" "}
+              <span className="text-muted-foreground">
+                Worth a look when planning your next split.
+              </span>
+            </p>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Download */}
       <button
         className="w-full rounded-pill py-4 text-sm font-semibold text-white transition-transform active:scale-[0.98]"
         style={{
