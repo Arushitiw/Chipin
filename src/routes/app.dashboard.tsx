@@ -361,3 +361,78 @@ function Dashboard() {
     </div>
   );
 }
+
+const TYPE_EMOJI: Record<string, string> = {
+  trip: "🌴", dayout: "🎢", bite: "🍻", custom: "✨",
+};
+
+function ActiveTrips({ onCreate }: { onCreate: () => void }) {
+  const [trips, setTrips] = useState<Trip[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = () => {
+    setError(null);
+    setTrips(null);
+    fetchTrips()
+      .then(setTrips)
+      .catch(() => setError("Couldn't load your trips"));
+  };
+
+  useEffect(() => { load(); }, []);
+
+  return (
+    <section className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-muted-foreground">Continue where you left off</h2>
+        <Link to="/app/balances" className="text-xs text-primary">View all</Link>
+      </div>
+
+      {trips === null && !error && (
+        <div className="space-y-2">
+          <ShimmerCard className="h-16" />
+          <ShimmerCard className="h-16" />
+        </div>
+      )}
+
+      {error && <ErrorState message={error} onRetry={load} />}
+
+      {trips && trips.length === 0 && (
+        <EmptyState
+          icon={<SuitcaseIcon />}
+          title="No trips yet"
+          subtitle="Create your first trip and invite your friends"
+          action={
+            <button
+              onClick={onCreate}
+              className="mt-2 inline-flex items-center gap-2 rounded-pill bg-gradient-to-r from-[#6C47FF] to-[#FF6B6B] px-5 py-2.5 text-sm font-semibold text-white shadow-glow"
+            >
+              <Plus className="h-4 w-4" /> Create a Trip
+            </button>
+          }
+        />
+      )}
+
+      {trips && trips.map((t) => (
+        <Link
+          key={t.id}
+          to="/app/trip/$id"
+          params={{ id: t.id }}
+          className="flex items-center justify-between rounded-xl border border-border bg-card p-4 transition-smooth hover:border-primary/40 hover:shadow-glow"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-background text-xl">
+              {TYPE_EMOJI[t.type] || "🧾"}
+            </div>
+            <div>
+              <p className="font-semibold text-foreground">{t.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {t.members.length} member{t.members.length === 1 ? "" : "s"} · {t.currency}
+              </p>
+            </div>
+          </div>
+          <span className="text-xs text-muted-foreground">Open →</span>
+        </Link>
+      ))}
+    </section>
+  );
+}
